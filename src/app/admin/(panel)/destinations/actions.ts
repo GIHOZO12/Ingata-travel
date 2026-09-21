@@ -3,27 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { AdminApiError, adminFetch } from "@/lib/admin-api";
-
-export type DestinationFormState =
-  | {
-      error?: string;
-      fieldErrors?: Record<string, string>;
-      // Sent back so the form can keep what the admin typed after an error.
-      values?: Record<string, string | boolean>;
-    }
-  | undefined;
-
-// One item per line in a textarea -> array of strings for the API.
-const lines = (value: FormDataEntryValue | null) =>
-  String(value ?? "")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+import { uploadImages } from "@/lib/admin-uploads";
+import { fieldErrorsFrom, lines, type FormState } from "@/lib/form";
 
 // The public site's pages show destination data, so refresh them after changes.
 function refreshPublicPages() {
   revalidatePath("/");
   revalidatePath("/destinations");
+  revalidatePath("/tours");
   revalidatePath("/admin/destinations");
   revalidatePath("/admin");
 }
@@ -32,9 +19,9 @@ function refreshPublicPages() {
 // .bind() in the page, so useActionState only sees (prevState, formData).
 export async function saveDestination(
   id: number | null,
-  _prev: DestinationFormState,
+  _prev: FormState,
   formData: FormData,
-): Promise<DestinationFormState> {
+): Promise<FormState> {
   const values = {
     name: String(formData.get("name") ?? "").trim(),
     country: String(formData.get("country") ?? "").trim(),
@@ -55,31 +42,28 @@ export async function saveDestination(
     return { fieldErrors, values };
   }
 
-  const body = {
-    name: values.name,
-    country: values.country,
-    overview: values.overview,
-    attractions: lines(values.attractions),
-    activities: lines(values.activities),
-    bestTimeToVisit: values.bestTimeToVisit,
-    heroImage: values.heroImage,
-    images: lines(values.images),
-    isFeatured: values.isFeatured,
-  };
-
   try {
+    // Files first: an uploaded hero image wins over a pasted URL.
+    const [uploadedHero] = await uploadImages([formData.get("heroImageFile")!]);
+    const uploadedGallery = await uploadImages(formData.getAll("imageFiles"));
+
     await adminFetch(id === null ? "/destinations" : `/destinations/${id}`, {
       method: id === null ? "POST" : "PUT",
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        name: values.name,
+        country: values.country,
+        overview: values.overview,
+        attractions: lines(values.attractions),
+        activities: lines(values.activities),
+        bestTimeToVisit: values.bestTimeToVisit,
+        heroImage: uploadedHero ?? values.heroImage,
+        images: [...lines(values.images), ...uploadedGallery],
+        isFeatured: values.isFeatured,
+      }),
     });
   } catch (error) {
     if (error instanceof AdminApiError) {
-      // Map the API's validation details onto the matching form fields.
-      const apiFieldErrors: Record<string, string> = {};
-      for (const detail of error.details) {
-        if (detail.path && detail.msg) apiFieldErrors[detail.path] = detail.msg;
-      }
-      return { error: error.message, fieldErrors: apiFieldErrors, values };
+      return { error: error.message, fieldErrors: fieldErrorsFrom(error), values };
     }
     throw error;
   }

@@ -46,7 +46,7 @@ export default function Header() {
             Staff Login
           </Link>
           <Link
-            href="/plan-your-trip"
+            href="/book"
             className="rounded-full bg-zinc-900 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700"
           >
             Book Now
@@ -92,7 +92,7 @@ export default function Header() {
             Staff Login
           </Link>
           <Link
-            href="/plan-your-trip"
+            href="/book"
             onClick={() => setMenuOpen(false)}
             className="rounded-full bg-zinc-900 px-5 py-3 text-center text-sm font-medium text-white"
           >
