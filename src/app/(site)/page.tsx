@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { getDestinations } from "@/lib/api";
+import { getDestinations, getTours } from "@/lib/api";
 import DestinationCard from "@/components/DestinationCard";
+import TourCard from "@/components/TourCard";
 import HeroSlider from "@/components/HeroSlider";
-import type { Destination } from "@/lib/types";
+import type { Destination, Tour } from "@/lib/types";
 
 // Static content for the sections (SRS §15 and §38). Final wording must be
 // approved by the company, so it lives in plain arrays that are easy to edit.
@@ -48,8 +49,22 @@ async function getFeaturedDestinations(): Promise<Destination[]> {
   }
 }
 
+// Same idea for tours (SRS §13): featured ones first, otherwise the newest.
+async function getFeaturedTours(): Promise<Tour[]> {
+  try {
+    const all = await getTours();
+    const featured = all.filter((t) => t.isFeatured);
+    return (featured.length > 0 ? featured : all).slice(0, 3);
+  } catch {
+    return [];
+  }
+}
+
 export default async function Home() {
-  const featured = await getFeaturedDestinations();
+  const [featured, featuredTours] = await Promise.all([
+    getFeaturedDestinations(),
+    getFeaturedTours(),
+  ]);
 
   return (
     <>
@@ -110,6 +125,30 @@ export default async function Home() {
           </ul>
         )}
       </section>
+
+      {/* Featured tours (SRS §13) - hidden until at least one tour exists */}
+      {featuredTours.length > 0 && (
+        <section className="bg-white px-6 py-16 text-zinc-900">
+          <div className="mx-auto max-w-6xl">
+            <div className="flex items-end justify-between">
+              <h2 className="text-3xl font-semibold tracking-tight">
+                Featured Tours
+              </h2>
+              <Link
+                href="/tours"
+                className="text-sm font-medium text-zinc-700 hover:text-zinc-900"
+              >
+                View all →
+              </Link>
+            </div>
+            <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredTours.map((tour) => (
+                <TourCard key={tour.id} tour={tour} />
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* Why choose us (SRS §15) */}
       <section className="bg-zinc-50 px-6 py-16">

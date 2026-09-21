@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { adminFetch } from "@/lib/admin-api";
 import { getDestinations } from "@/lib/api";
-import type { BookingRequest } from "@/lib/types";
+import type { BookingRequest, Inquiry } from "@/lib/types";
 import StatusBadge from "@/components/admin/StatusBadge";
 
 export default async function AdminOverviewPage() {
   // Promise.all runs both requests at the same time instead of one after the other.
-  const [bookings, destinations] = await Promise.all([
+  const [bookings, destinations, inquiries] = await Promise.all([
     adminFetch<BookingRequest[]>("/booking-requests"),
     getDestinations(),
+    adminFetch<Inquiry[]>("/inquiries?status=NEW"),
   ]);
 
   const stats = [
@@ -21,6 +22,7 @@ export default async function AdminOverviewPage() {
       label: "Confirmed",
       value: bookings.filter((b) => b.status === "CONFIRMED").length,
     },
+    { label: "New inquiries", value: inquiries.length },
     { label: "Destinations", value: destinations.length },
   ];
 
@@ -28,7 +30,7 @@ export default async function AdminOverviewPage() {
     <div className="max-w-5xl">
       <h1 className="text-2xl font-semibold text-zinc-900">Overview</h1>
 
-      <dl className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <dl className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
         {stats.map((stat) => (
           <div key={stat.label} className="rounded-lg bg-white p-5 shadow-sm">
             <dt className="text-sm text-zinc-500">{stat.label}</dt>

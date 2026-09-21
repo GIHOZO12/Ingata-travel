@@ -3,35 +3,10 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import type { Destination } from "@/lib/types";
-import type { DestinationFormState } from "./actions";
-
-const inputClass =
-  "mt-1 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900";
-
-function Field({
-  label,
-  name,
-  error,
-  hint,
-  children,
-}: {
-  label: string;
-  name: string;
-  error?: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-zinc-700">
-        {label}
-      </label>
-      {children}
-      {hint && !error && <p className="mt-1 text-xs text-zinc-500">{hint}</p>}
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
-    </div>
-  );
-}
+import type { FormState } from "@/lib/form";
+import { resolveImageUrl } from "@/lib/images";
+import Field, { inputClass } from "@/components/admin/Field";
+import ImagePicker from "@/components/admin/ImagePicker";
 
 // Reused for "add" and "edit". `action` is the Server Action with the id
 // already bound; `destination` is only passed when editing.
@@ -39,10 +14,7 @@ export default function DestinationForm({
   action,
   destination,
 }: {
-  action: (
-    prev: DestinationFormState,
-    formData: FormData,
-  ) => Promise<DestinationFormState>;
+  action: (prev: FormState, formData: FormData) => Promise<FormState>;
   destination?: Destination;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -134,29 +106,56 @@ export default function DestinationForm({
         />
       </Field>
 
-      <Field
-        label="Hero image URL"
-        name="heroImage"
-        hint="A link to the main photo. File upload will come later."
-      >
-        <input
-          id="heroImage"
-          name="heroImage"
-          type="url"
-          defaultValue={text("heroImage", destination?.heroImage ?? "")}
-          className={inputClass}
-        />
-      </Field>
+      <fieldset className="space-y-4 rounded-lg border border-zinc-200 bg-white p-4">
+        <legend className="px-1 text-sm font-medium text-zinc-700">Photos</legend>
 
-      <Field label="More image URLs" name="images" hint="One per line.">
-        <textarea
-          id="images"
+        <Field
+          label="Main photo"
+          name="heroImageFile"
+          hint="JPG, PNG or WebP, up to 5 MB. Uploading replaces the current photo."
+        >
+          <ImagePicker
+            id="heroImageFile"
+            name="heroImageFile"
+            currentUrl={resolveImageUrl(destination?.heroImage)}
+          />
+        </Field>
+
+        <Field
+          label="…or main photo link"
+          name="heroImage"
+          hint="Only used if you don't upload a file."
+        >
+          <input
+            id="heroImage"
+            name="heroImage"
+            defaultValue={text("heroImage", destination?.heroImage ?? "")}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field
+          label="Add gallery photos"
+          name="imageFiles"
+          hint="You can choose several at once."
+        >
+          <ImagePicker id="imageFiles" name="imageFiles" multiple />
+        </Field>
+
+        <Field
+          label="Gallery photo links"
           name="images"
-          rows={3}
-          defaultValue={text("images", destination?.images.join("\n") ?? "")}
-          className={inputClass}
-        />
-      </Field>
+          hint="One per line. Delete a line to remove that photo."
+        >
+          <textarea
+            id="images"
+            name="images"
+            rows={3}
+            defaultValue={text("images", destination?.images.join("\n") ?? "")}
+            className={inputClass}
+          />
+        </Field>
+      </fieldset>
 
       <label className="flex items-center gap-2 text-sm text-zinc-700">
         <input

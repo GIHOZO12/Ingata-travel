@@ -5,7 +5,10 @@ import { logout } from "@/app/admin/actions";
 const links = [
   { label: "Overview", href: "/admin" },
   { label: "Bookings", href: "/admin/bookings" },
+  { label: "Inquiries", href: "/admin/inquiries" },
   { label: "Destinations", href: "/admin/destinations" },
+  { label: "Tours", href: "/admin/tours" },
+  { label: "FAQs", href: "/admin/faqs" },
 ];
 
 // Everything inside app/admin/(panel)/ is wrapped by this layout, and every

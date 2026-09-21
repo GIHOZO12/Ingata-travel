@@ -7,6 +7,8 @@ export const siteConfig = {
   name: "Ingata Travel",
   tagline: "Your Journey. Our Expertise. Unforgettable Memories.",
   phone: "+250 000 000 000",
+  whatsapp: "250000000000", // digits only, with country code (used in wa.me links)
+  hours: "Monday – Saturday, 8:00 – 18:00",
   email: "info@example.com",
   address: "Kigali, Rwanda",
 };
@@ -32,7 +34,7 @@ export const footerNav = {
   Explore: [
     { label: "Destinations", href: "/destinations" },
     { label: "Tours", href: "/tours" },
-    { label: "Plan Your Trip", href: "/plan-your-trip" },
+    { label: "Book a Tour", href: "/book" },
   ],
   Resources: [
     { label: "Travel Information", href: "/travel-information" },

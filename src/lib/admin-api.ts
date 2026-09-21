@@ -29,7 +29,11 @@ export async function adminFetch<T>(
       ...init,
       cache: "no-store", // admin data must always be fresh
       headers: {
-        "Content-Type": "application/json",
+        // JSON bodies get a JSON content type. For file uploads (FormData) we
+        // must NOT set it: fetch adds the multipart boundary itself.
+        ...(typeof init.body === "string"
+          ? { "Content-Type": "application/json" }
+          : {}),
         Authorization: `Bearer ${token}`,
         ...init.headers,
       },
