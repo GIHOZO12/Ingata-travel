@@ -2,7 +2,9 @@ import { getDestinations } from "@/lib/api";
 import DestinationCard from "@/components/DestinationCard";
 
 export default async function DestinationsPage() {
-  const destinations = await getDestinations();
+  // If the API can't be reached (e.g. no backend deployed yet), show the
+  // existing "no destinations" empty state instead of crashing the page.
+  const destinations = await getDestinations().catch(() => []);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-6 py-16">

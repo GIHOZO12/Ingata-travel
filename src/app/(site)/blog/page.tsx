@@ -20,7 +20,9 @@ const excerpt = (content: string) =>
     .slice(0, 160);
 
 export default async function BlogPage() {
-  const posts = await getBlogPosts();
+  // If the API can't be reached (e.g. no backend deployed yet), show the
+  // existing "articles coming soon" empty state instead of crashing.
+  const posts = await getBlogPosts().catch(() => []);
 
   return (
     <div className="flex-1 bg-white text-zinc-900">

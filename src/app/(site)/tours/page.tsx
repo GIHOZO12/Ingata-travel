@@ -17,7 +17,9 @@ export default async function ToursPage({
   // Filters live in the URL (?category=...&q=...) so a filtered list can be
   // shared or bookmarked, and the page is rendered on the server.
   const { category, q } = await searchParams;
-  const allTours = await getTours();
+  // If the API can't be reached (e.g. no backend deployed yet), fall back to
+  // an empty list — the page already shows "tours are being prepared" for that.
+  const allTours = await getTours().catch(() => []);
 
   const categories = [...new Set(allTours.map((t) => t.category))].sort();
   const search = q?.trim().toLowerCase() ?? "";
