@@ -5,6 +5,7 @@
 // use useState or usePathname.
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { mainNav, siteConfig } from "@/lib/site";
@@ -20,8 +21,20 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="text-lg font-semibold text-zinc-900">
-          {siteConfig.name}
+        <Link href="/" className="flex items-center gap-2">
+          {/* public/ingata.png already has "INGATA TRAVEL" baked into the
+              image, but that text is unreadable at this small size — it's
+              shown here purely as the icon mark, next to real (legible) text. */}
+          <Image
+            src="/ingata.png"
+            alt=""
+            width={40}
+            height={40}
+            className="h-9 w-9 rounded-md object-cover"
+          />
+          <span className="text-lg font-semibold text-zinc-900">
+            {siteConfig.name}
+          </span>
         </Link>
 
         {/* Desktop navigation: hidden below the lg breakpoint */}
@@ -43,7 +56,7 @@ export default function Header() {
             href="/admin/login"
             className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100"
           >
-            Staff Login
+             Login
           </Link>
           <Link
             href="/book"

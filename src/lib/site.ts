@@ -6,11 +6,15 @@
 export const siteConfig = {
   name: "Ingata Travel",
   tagline: "Your Journey. Our Expertise. Unforgettable Memories.",
-  phone: "+250 000 000 000",
-  whatsapp: "250000000000", // digits only, with country code (used in wa.me links)
+  phone: "+250783227185",
+  whatsapp: "+250783227185", // digits only, with country code (used in wa.me links)
   hours: "Monday – Saturday, 8:00 – 18:00",
-  email: "info@example.com",
-  address: "Kigali, Rwanda",
+  // The legal pages are DRAFT templates (SRS §77: the company's legal or
+  // management team must approve them). While this is false, each legal page
+  // shows a "draft" notice. Set it to true once the texts are approved.
+  legalApproved: false,
+  email: "info@ingatatravel.com",
+  address: "Zindiro Kigali, Rwanda",
 };
 
 // SRS §10 recommended navigation. "Book Now" is handled separately as a CTA button.
@@ -46,5 +50,7 @@ export const footerNav = {
     { label: "Terms & Conditions", href: "/terms-and-conditions" },
     { label: "Booking Policy", href: "/booking-policy" },
     { label: "Cancellation Policy", href: "/cancellation-policy" },
+    { label: "Refund Policy", href: "/refund-policy" },
+    { label: "Cookie Policy", href: "/cookie-policy" },
   ],
 };

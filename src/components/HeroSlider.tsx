@@ -14,6 +14,7 @@ import Image from "next/image";
 import gorillaPortrait from "@/assets/bob-brewer-lV5PT7R-RuE-unsplash.jpg";
 import gorillaFamily from "@/assets/johnny-africa-BDWnIpExrvY-unsplash.jpg";
 import lakeLife from "@/assets/ifeoluwa-b-OYeYN7TmU-g-unsplash.jpg";
+import kingsPalace from "@/assets/kings-palace.jpg";
 
 // Importing an image file gives Next.js its width/height at build time and lets
 // <Image> resize + compress it automatically (the originals are 5000px+ wide).
@@ -32,6 +33,12 @@ const slides = [
     image: lakeLife,
     alt: "Wooden fishing boats and a passenger boat on a lake with green hills behind",
     caption: "Lakes & Local Life",
+  },
+
+  {
+    image: kingsPalace,
+    alt: "A traditional Rwandan palace with a thatched roof and wooden carvings",
+    caption: "Cultural Heritage",
   },
 ];
 

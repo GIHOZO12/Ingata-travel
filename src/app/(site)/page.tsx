@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { getDestinations, getTours } from "@/lib/api";
+import { getDestinations, getTestimonials, getTours } from "@/lib/api";
+import { resolveImageUrl } from "@/lib/images";
 import DestinationCard from "@/components/DestinationCard";
 import TourCard from "@/components/TourCard";
 import HeroSlider from "@/components/HeroSlider";
-import type { Destination, Tour } from "@/lib/types";
+import type { Destination, Testimonial, Tour } from "@/lib/types";
 
 // Static content for the sections (SRS §15 and §38). Final wording must be
 // approved by the company, so it lives in plain arrays that are easy to edit.
@@ -60,10 +61,21 @@ async function getFeaturedTours(): Promise<Tour[]> {
   }
 }
 
+// Only testimonials an admin has approved are returned by the API (SRS §46:
+// no fabricated reviews). Hidden entirely until at least one exists.
+async function getApprovedTestimonials(): Promise<Testimonial[]> {
+  try {
+    return (await getTestimonials()).slice(0, 3);
+  } catch {
+    return [];
+  }
+}
+
 export default async function Home() {
-  const [featured, featuredTours] = await Promise.all([
+  const [featured, featuredTours, testimonials] = await Promise.all([
     getFeaturedDestinations(),
     getFeaturedTours(),
+    getApprovedTestimonials(),
   ]);
 
   return (
@@ -186,6 +198,46 @@ export default async function Home() {
           ))}
         </ol>
       </section>
+
+      {/* Testimonials (SRS §46) */}
+      {testimonials.length > 0 && (
+        <section className="bg-zinc-50 px-6 py-16 text-zinc-900">
+          <div className="mx-auto max-w-6xl">
+            <h2 className="text-3xl font-semibold tracking-tight">
+              What our travelers say
+            </h2>
+            <ul className="mt-8 grid gap-6 md:grid-cols-3">
+              {testimonials.map((t) => {
+                const photo = resolveImageUrl(t.photo);
+                return (
+                  <li key={t.id} className="flex flex-col rounded-xl bg-white p-6 shadow-sm">
+                    <blockquote className="flex-1 text-zinc-700">
+                      “{t.content}”
+                    </blockquote>
+                    <div className="mt-5 flex items-center gap-3">
+                      {photo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={photo}
+                          alt={t.customerName}
+                          referrerPolicy="no-referrer"
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">{t.customerName}</p>
+                        <p className="text-xs text-zinc-500">
+                          {[t.country, t.category].filter(Boolean).join(" · ")}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* Contact call-to-action (SRS §9 item 14) */}
       <section className="bg-zinc-900 px-6 py-16 text-center text-white">
