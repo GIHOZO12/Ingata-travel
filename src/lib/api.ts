@@ -67,28 +67,28 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
   return json.data;
 }
 
-// Returns null when the post doesn't exist, so the page can show a 404.
+// Returns null when the post doesn't exist (or the API can't be reached at
+// all — e.g. no backend deployed yet), so the page can show a clean 404
+// instead of crashing the whole build/request.
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
-  const res = await fetch(`${API}/blog/${encodeURIComponent(slug)}`);
-
-  if (res.status === 404) return null;
-  if (!res.ok) {
-    throw new Error(`Failed to fetch blog post: ${res.status}`);
+  try {
+    const res = await fetch(`${API}/blog/${encodeURIComponent(slug)}`);
+    if (!res.ok) return null;
+    const json: ApiResponse<BlogPost> = await res.json();
+    return json.data;
+  } catch {
+    return null;
   }
-
-  const json: ApiResponse<BlogPost> = await res.json();
-  return json.data;
 }
 
-// Returns null when the tour doesn't exist, so the page can show a 404.
+// Same idea for tours (SRS tour detail page).
 export async function getTour(slug: string): Promise<TourDetail | null> {
-  const res = await fetch(`${API}/tours/${encodeURIComponent(slug)}`);
-
-  if (res.status === 404) return null;
-  if (!res.ok) {
-    throw new Error(`Failed to fetch tour: ${res.status}`);
+  try {
+    const res = await fetch(`${API}/tours/${encodeURIComponent(slug)}`);
+    if (!res.ok) return null;
+    const json: ApiResponse<TourDetail> = await res.json();
+    return json.data;
+  } catch {
+    return null;
   }
-
-  const json: ApiResponse<TourDetail> = await res.json();
-  return json.data;
 }

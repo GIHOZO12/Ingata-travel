@@ -16,7 +16,9 @@ export default async function BookPage({
 }) {
   // /book?tour=some-slug pre-selects that tour (the "Book Now" buttons use it).
   const { tour: tourSlug } = await searchParams;
-  const tours = await getTours();
+  // If the API can't be reached (e.g. no backend deployed yet), show the
+  // existing "tours are being prepared" fallback instead of crashing.
+  const tours = await getTours().catch(() => []);
   const selected = tours.find((t) => t.slug === tourSlug);
 
 

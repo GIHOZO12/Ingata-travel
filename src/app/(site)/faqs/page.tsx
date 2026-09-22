@@ -8,7 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default async function FaqsPage() {
-  const faqs = await getFAQs();
+  // If the API can't be reached (e.g. no backend deployed yet), show the
+  // existing "no questions published" empty state instead of crashing.
+  const faqs = await getFAQs().catch(() => []);
 
   // Structured data so search engines can show these questions in results
   // (SRS §54: FAQPage). "<" is escaped so an answer can never close the script tag.
