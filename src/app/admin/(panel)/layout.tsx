@@ -9,6 +9,8 @@ const links = [
   { label: "Destinations", href: "/admin/destinations" },
   { label: "Tours", href: "/admin/tours" },
   { label: "FAQs", href: "/admin/faqs" },
+  { label: "Testimonials", href: "/admin/testimonials" },
+  { label: "Blog", href: "/admin/blog" },
 ];
 
 // Everything inside app/admin/(panel)/ is wrapped by this layout, and every

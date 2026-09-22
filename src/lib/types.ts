@@ -56,6 +56,32 @@ export interface TourDetail extends Tour {
   itineraryDays: ItineraryDay[];
 }
 
+export interface Testimonial {
+  id: number;
+  customerName: string;
+  country: string | null;
+  category: string | null;
+  content: string;
+  photo: string | null;
+  isApproved: boolean;
+  createdAt: string;
+}
+
+export interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  featuredImage: string | null;
+  author: string | null;
+  category: string | null;
+  tags: string[];
+  isPublished: boolean;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface FAQ {
   id: number;
   question: string;

@@ -1,7 +1,9 @@
 import type {
   ApiResponse,
+  BlogPost,
   Destination,
   FAQ,
+  Testimonial,
   Tour,
   TourDetail,
 } from "@/lib/types";
@@ -40,6 +42,41 @@ export async function getFAQs(): Promise<FAQ[]> {
   }
 
   const json: ApiResponse<FAQ[]> = await res.json();
+  return json.data;
+}
+
+export async function getTestimonials(): Promise<Testimonial[]> {
+  const res = await fetch(`${API}/testimonials`);
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch testimonials: ${res.status}`);
+  }
+
+  const json: ApiResponse<Testimonial[]> = await res.json();
+  return json.data;
+}
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  const res = await fetch(`${API}/blog`);
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch blog posts: ${res.status}`);
+  }
+
+  const json: ApiResponse<BlogPost[]> = await res.json();
+  return json.data;
+}
+
+// Returns null when the post doesn't exist, so the page can show a 404.
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  const res = await fetch(`${API}/blog/${encodeURIComponent(slug)}`);
+
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch blog post: ${res.status}`);
+  }
+
+  const json: ApiResponse<BlogPost> = await res.json();
   return json.data;
 }
 
