@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getToken } from "@/lib/session";
 import type { AdminUser, ApiResponse } from "@/lib/types";
 import { cache } from "react";
+import { API_TIMEOUT_MS } from "@/lib/api-timeout";
 
 // Error type so Server Actions can show the backend's message to the admin.
 export class AdminApiError extends Error {
@@ -28,6 +29,7 @@ export async function adminFetch<T>(
     res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
       ...init,
       cache: "no-store", // admin data must always be fresh
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
       headers: {
         // JSON bodies get a JSON content type. For file uploads (FormData) we
         // must NOT set it: fetch adds the multipart boundary itself.

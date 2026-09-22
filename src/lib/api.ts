@@ -7,13 +7,16 @@ import type {
   Tour,
   TourDetail,
 } from "@/lib/types";
+import { API_TIMEOUT_MS } from "@/lib/api-timeout";
 
 // All calls to the Express backend live here so pages stay small.
 // These run on the server (called from Server Components).
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getDestinations(): Promise<Destination[]> {
-  const res = await fetch(`${API}/destinations`);
+  const res = await fetch(`${API}/destinations`, {
+    signal: AbortSignal.timeout(API_TIMEOUT_MS),
+  });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch destinations: ${res.status}`);
@@ -24,7 +27,9 @@ export async function getDestinations(): Promise<Destination[]> {
 }
 
 export async function getTours(): Promise<Tour[]> {
-  const res = await fetch(`${API}/tours`);
+  const res = await fetch(`${API}/tours`, {
+    signal: AbortSignal.timeout(API_TIMEOUT_MS),
+  });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch tours: ${res.status}`);
@@ -35,7 +40,9 @@ export async function getTours(): Promise<Tour[]> {
 }
 
 export async function getFAQs(): Promise<FAQ[]> {
-  const res = await fetch(`${API}/faqs`);
+  const res = await fetch(`${API}/faqs`, {
+    signal: AbortSignal.timeout(API_TIMEOUT_MS),
+  });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch FAQs: ${res.status}`);
@@ -46,7 +53,9 @@ export async function getFAQs(): Promise<FAQ[]> {
 }
 
 export async function getTestimonials(): Promise<Testimonial[]> {
-  const res = await fetch(`${API}/testimonials`);
+  const res = await fetch(`${API}/testimonials`, {
+    signal: AbortSignal.timeout(API_TIMEOUT_MS),
+  });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch testimonials: ${res.status}`);
@@ -57,7 +66,9 @@ export async function getTestimonials(): Promise<Testimonial[]> {
 }
 
 export async function getBlogPosts(): Promise<BlogPost[]> {
-  const res = await fetch(`${API}/blog`);
+  const res = await fetch(`${API}/blog`, {
+    signal: AbortSignal.timeout(API_TIMEOUT_MS),
+  });
 
   if (!res.ok) {
     throw new Error(`Failed to fetch blog posts: ${res.status}`);
@@ -68,11 +79,13 @@ export async function getBlogPosts(): Promise<BlogPost[]> {
 }
 
 // Returns null when the post doesn't exist (or the API can't be reached at
-// all — e.g. no backend deployed yet), so the page can show a clean 404
-// instead of crashing the whole build/request.
+// all, or is too slow to respond — e.g. no backend deployed yet), so the
+// page can show a clean 404 instead of crashing the whole build/request.
 export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   try {
-    const res = await fetch(`${API}/blog/${encodeURIComponent(slug)}`);
+    const res = await fetch(`${API}/blog/${encodeURIComponent(slug)}`, {
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
     if (!res.ok) return null;
     const json: ApiResponse<BlogPost> = await res.json();
     return json.data;
@@ -84,7 +97,9 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
 // Same idea for tours (SRS tour detail page).
 export async function getTour(slug: string): Promise<TourDetail | null> {
   try {
-    const res = await fetch(`${API}/tours/${encodeURIComponent(slug)}`);
+    const res = await fetch(`${API}/tours/${encodeURIComponent(slug)}`, {
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
+    });
     if (!res.ok) return null;
     const json: ApiResponse<TourDetail> = await res.json();
     return json.data;
