@@ -1,5 +1,7 @@
 "use server";
 
+import { API_TIMEOUT_MS } from "@/lib/api-timeout";
+
 export type InquiryState =
   | {
       success?: boolean;
@@ -67,6 +69,7 @@ export async function submitInquiry(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
       // The API rejects empty strings for dates/numbers, so optional fields
       // are only sent when they were filled in.
       body: JSON.stringify({

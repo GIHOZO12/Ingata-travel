@@ -1,5 +1,7 @@
 "use server";
 
+import { API_TIMEOUT_MS } from "@/lib/api-timeout";
+
 export type BookingState =
   | {
       success?: boolean;
@@ -67,6 +69,7 @@ export async function submitBooking(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
       body: JSON.stringify({
         tourId: Number(values.tourId),
         fullName: values.fullName,

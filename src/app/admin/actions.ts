@@ -5,6 +5,7 @@
 
 import { redirect } from "next/navigation";
 import { clearToken, setToken } from "@/lib/session";
+import { API_TIMEOUT_MS } from "@/lib/api-timeout";
 
 export type LoginState = { error?: string } | undefined;
 
@@ -26,6 +27,7 @@ export async function login(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
       cache: "no-store",
+      signal: AbortSignal.timeout(API_TIMEOUT_MS),
     });
   } catch {
     return { error: "Cannot reach the server. Is the backend running?" };
