@@ -136,11 +136,15 @@ export interface BookingRequest {
   tour: { id: number; name: string; slug: string };
 }
 
+export const ADMIN_ROLES = ["ADMIN", "STAFF"] as const;
+export type AdminRole = (typeof ADMIN_ROLES)[number];
+
 export interface AdminUser {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: AdminRole;
+  createdAt: string;
 }
 
 export interface ApiResponse<T> {
