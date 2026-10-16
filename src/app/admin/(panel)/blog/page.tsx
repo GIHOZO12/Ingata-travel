@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { getBlogPosts } from "@/lib/api";
 import { formatDate } from "@/lib/format";
+import { verifyAdmin } from "@/lib/admin-api";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { deleteBlogPost } from "./actions";
 
 export default async function AdminBlogPage() {
-  const posts = await getBlogPosts();
+  // Staff can create/edit articles, but deleting stays admin-only — the
+  // button is hidden for them rather than shown and then rejected by the API.
+  const [posts, me] = await Promise.all([getBlogPosts(), verifyAdmin()]);
 
   return (
     <div className="max-w-4xl">
@@ -49,15 +52,17 @@ export default async function AdminBlogPage() {
                 >
                   Edit
                 </Link>
-                <form action={deleteBlogPost}>
-                  <input type="hidden" name="id" value={post.id} />
-                  <ConfirmButton
-                    message={`Delete "${post.title}"? This cannot be undone.`}
-                    className="text-red-600 hover:underline"
-                  >
-                    Delete
-                  </ConfirmButton>
-                </form>
+                {me.role === "ADMIN" && (
+                  <form action={deleteBlogPost}>
+                    <input type="hidden" name="id" value={post.id} />
+                    <ConfirmButton
+                      message={`Delete "${post.title}"? This cannot be undone.`}
+                      className="text-red-600 hover:underline"
+                    >
+                      Delete
+                    </ConfirmButton>
+                  </form>
+                )}
               </div>
             </li>
           ))}

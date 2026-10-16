@@ -9,8 +9,8 @@ const links = [
   { label: "Destinations", href: "/admin/destinations", adminOnly: true },
   { label: "Tours", href: "/admin/tours", adminOnly: true },
   { label: "FAQs", href: "/admin/faqs", adminOnly: true },
-  { label: "Testimonials", href: "/admin/testimonials", adminOnly: true },
-  { label: "Blog", href: "/admin/blog", adminOnly: true },
+  { label: "Testimonials", href: "/admin/testimonials", adminOnly: false },
+  { label: "Blog", href: "/admin/blog", adminOnly: false },
   { label: "Staff", href: "/admin/staff", adminOnly: true },
 ];
 
