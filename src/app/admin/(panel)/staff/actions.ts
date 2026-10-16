@@ -6,6 +6,8 @@ import { AdminApiError, adminFetch } from "@/lib/admin-api";
 import { ADMIN_ROLES, type AdminRole } from "@/lib/types";
 import { fieldErrorsFrom, type FormState } from "@/lib/form";
 
+// No password field: the backend generates the account with a placeholder
+// nobody knows and emails the new person a "set your own password" link.
 export async function createStaff(
   _prev: FormState,
   formData: FormData,
@@ -13,16 +15,12 @@ export async function createStaff(
   const values = {
     name: String(formData.get("name") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim(),
-    password: String(formData.get("password") ?? ""),
     role: String(formData.get("role") ?? "STAFF"),
   };
 
   const fieldErrors: Record<string, string> = {};
   if (!values.name) fieldErrors.name = "Name is required.";
   if (!values.email) fieldErrors.email = "Email is required.";
-  if (values.password.length < 8) {
-    fieldErrors.password = "Password must be at least 8 characters long.";
-  }
   if (Object.keys(fieldErrors).length > 0) {
     return { fieldErrors, values };
   }
@@ -57,6 +55,17 @@ export async function changeRole(formData: FormData) {
     method: "PUT",
     body: JSON.stringify({ role }),
   });
+
+  revalidatePath("/admin/staff");
+}
+
+// For an account that hasn't followed its invite link yet — generates a
+// fresh link (the old one stops working) and re-sends the email.
+export async function resendInvite(formData: FormData) {
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id)) throw new Error("Invalid account.");
+
+  await adminFetch(`/auth/admins/${id}/resend-invite`, { method: "POST" });
 
   revalidatePath("/admin/staff");
 }

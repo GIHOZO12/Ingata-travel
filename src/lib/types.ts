@@ -145,6 +145,9 @@ export interface AdminUser {
   email: string;
   role: AdminRole;
   createdAt: string;
+  // true = this account hasn't followed its "set your password" invite link
+  // yet, so it can't sign in (see the Staff page's Pending badge).
+  hasPendingInvite: boolean;
 }
 
 export interface ApiResponse<T> {

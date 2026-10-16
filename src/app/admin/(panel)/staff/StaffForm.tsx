@@ -35,22 +35,6 @@ export default function StaffForm() {
         />
       </Field>
 
-      <Field
-        label="Temporary password"
-        name="password"
-        error={errors.password}
-        hint="At least 8 characters. Share it with them privately — there's no invite email yet."
-      >
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          minLength={8}
-          className={inputClass}
-        />
-      </Field>
-
       <Field label="Role" name="role">
         <select id="role" name="role" defaultValue="STAFF" className={inputClass}>
           <option value="STAFF">Staff — bookings &amp; inquiries only</option>
@@ -64,7 +48,7 @@ export default function StaffForm() {
           disabled={pending}
           className="rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-60"
         >
-          {pending ? "Adding…" : "Add account"}
+          {pending ? "Sending invite…" : "Add & send invite"}
         </button>
         <Link
           href="/admin/staff"

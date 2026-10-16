@@ -1,12 +1,17 @@
 import Link from "next/link";
-import { adminFetch } from "@/lib/admin-api";
+import { adminFetch, verifyAdmin } from "@/lib/admin-api";
 import type { Testimonial } from "@/lib/types";
 import ConfirmButton from "@/components/admin/ConfirmButton";
 import { deleteTestimonial, toggleApproved } from "./actions";
 
 export default async function AdminTestimonialsPage() {
-  // "/all" includes testimonials that are not approved yet.
-  const testimonials = await adminFetch<Testimonial[]>("/testimonials/all");
+  // "/all" includes testimonials that are not approved yet. Staff can
+  // create/edit/approve testimonials, but deleting stays admin-only — the
+  // button is hidden for them rather than shown and then rejected by the API.
+  const [testimonials, me] = await Promise.all([
+    adminFetch<Testimonial[]>("/testimonials/all"),
+    verifyAdmin(),
+  ]);
 
   return (
     <div className="max-w-4xl">
@@ -64,15 +69,17 @@ export default async function AdminTestimonialsPage() {
                 >
                   Edit
                 </Link>
-                <form action={deleteTestimonial}>
-                  <input type="hidden" name="id" value={t.id} />
-                  <ConfirmButton
-                    message={`Delete the testimonial from ${t.customerName}? This cannot be undone.`}
-                    className="text-red-600 hover:underline"
-                  >
-                    Delete
-                  </ConfirmButton>
-                </form>
+                {me.role === "ADMIN" && (
+                  <form action={deleteTestimonial}>
+                    <input type="hidden" name="id" value={t.id} />
+                    <ConfirmButton
+                      message={`Delete the testimonial from ${t.customerName}? This cannot be undone.`}
+                      className="text-red-600 hover:underline"
+                    >
+                      Delete
+                    </ConfirmButton>
+                  </form>
+                )}
               </div>
             </li>
           ))}

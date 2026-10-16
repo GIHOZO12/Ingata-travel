@@ -3,7 +3,7 @@ import { adminFetch, verifyAdmin } from "@/lib/admin-api";
 import { formatDate } from "@/lib/format";
 import type { AdminUser } from "@/lib/types";
 import ConfirmButton from "@/components/admin/ConfirmButton";
-import { changeRole, deleteStaff } from "./actions";
+import { changeRole, deleteStaff, resendInvite } from "./actions";
 
 export default async function StaffPage() {
   // verifyAdmin() tells us who's currently logged in, so the page can hide
@@ -53,6 +53,11 @@ export default async function StaffPage() {
                   >
                     {account.role === "ADMIN" ? "Administrator" : "Staff"}
                   </span>
+                  {account.hasPendingInvite && (
+                    <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                      Pending — hasn&apos;t signed in yet
+                    </span>
+                  )}
                 </p>
                 <p className="text-sm text-zinc-500">{account.email}</p>
                 <p className="text-xs text-zinc-400">
@@ -62,6 +67,14 @@ export default async function StaffPage() {
 
               {!isSelf && (
                 <div className="flex items-center gap-4 text-sm">
+                  {account.hasPendingInvite && (
+                    <form action={resendInvite}>
+                      <input type="hidden" name="id" value={account.id} />
+                      <button type="submit" className="text-zinc-600 hover:underline">
+                        Resend invite
+                      </button>
+                    </form>
+                  )}
                   <form action={changeRole}>
                     <input type="hidden" name="id" value={account.id} />
                     <input
