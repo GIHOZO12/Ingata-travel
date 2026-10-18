@@ -8,7 +8,7 @@ export default function AdminLoginPage() {
         <p className="mt-1 text-sm text-zinc-500">
           Staff only. Sign in to manage bookings and destinations.
         </p>
-        <LoginForm />
+        <LoginForm/>
       </div>
     </div>
   );
