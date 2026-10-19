@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { randomUUID, timingSafeEqual } from "node:crypto";
 import nodemailer from "nodemailer";
 
 // Email relay for the backend. Render's free tier blocks outbound SMTP, but
@@ -7,6 +7,10 @@ import nodemailer from "nodemailer";
 //
 // It is NOT public: every request must carry the shared EMAIL_RELAY_SECRET,
 // otherwise anyone could use our mail account to send spam.
+//
+// Every log line starts with "[email <id>]" so one request can be followed
+// through Vercel's logs (filter on "[email"). The same id is returned to the
+// backend, which logs it too.
 
 // nodemailer needs Node APIs (sockets), not the Edge runtime.
 export const runtime = "nodejs";
@@ -25,6 +29,13 @@ const transporter = process.env.SMTP_HOST
     })
   : null;
 
+// Which settings are missing — named in the logs, never their values.
+function missingConfig(): string[] {
+  return ["EMAIL_RELAY_SECRET", "SMTP_HOST", "SMTP_USER", "SMTP_PASS"].filter(
+    (key) => !process.env[key],
+  );
+}
+
 function isAuthorized(request: Request): boolean {
   const secret = process.env.EMAIL_RELAY_SECRET;
   if (!secret) return false;
@@ -35,13 +46,45 @@ function isAuthorized(request: Request): boolean {
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
+// nodemailer errors carry the SMTP details that explain most failures
+// (e.g. code EAUTH / responseCode 535 = wrong Gmail app password).
+function describeSmtpError(error: unknown) {
+  if (!(error instanceof Error)) return { message: String(error) };
+  const e = error as Error & {
+    code?: string;
+    responseCode?: number;
+    response?: string;
+    command?: string;
+  };
+  return {
+    message: e.message,
+    code: e.code,
+    responseCode: e.responseCode,
+    response: e.response,
+    command: e.command,
+  };
+}
+
 export async function POST(request: Request) {
+  const id = randomUUID().slice(0, 8);
+  const log = (msg: string, ...rest: unknown[]) => console.log(`[email ${id}] ${msg}`, ...rest);
+  const fail = (msg: string, ...rest: unknown[]) => console.error(`[email ${id}] ${msg}`, ...rest);
+  const started = Date.now();
+
   if (!isAuthorized(request)) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
+    if (!process.env.EMAIL_RELAY_SECRET) {
+      fail("rejected: EMAIL_RELAY_SECRET is not set on this deployment");
+    } else {
+      fail(
+        `rejected: bad or missing Authorization header (from ${request.headers.get("x-forwarded-for") ?? "unknown"}) — check the backend's EMAIL_RELAY_SECRET matches`,
+      );
+    }
+    return Response.json({ id, error: "Unauthorized" }, { status: 401 });
   }
+
   if (!transporter) {
-    console.error("[email] SMTP_HOST is not set; cannot send");
-    return Response.json({ error: "Email is not configured" }, { status: 503 });
+    fail(`cannot send: missing settings ${missingConfig().join(", ")}`);
+    return Response.json({ id, error: "Email is not configured" }, { status: 503 });
   }
 
   const body = await request.json().catch(() => null);
@@ -50,15 +93,24 @@ export async function POST(request: Request) {
   const html = typeof body?.html === "string" ? body.html : "";
   const replyTo = typeof body?.replyTo === "string" ? body.replyTo.trim() : "";
 
-  if (!EMAIL.test(to) || !subject || !html || (replyTo && !EMAIL.test(replyTo))) {
+  const problems = [
+    !body && "body is not valid JSON",
+    !EMAIL.test(to) && `invalid "to" (${to || "empty"})`,
+    !subject && "missing subject",
+    !html && "missing html",
+    replyTo && !EMAIL.test(replyTo) && `invalid "replyTo" (${replyTo})`,
+  ].filter(Boolean);
+  if (problems.length > 0) {
+    fail(`bad request: ${problems.join("; ")}`);
     return Response.json(
-      { error: "Expected { to, subject, html, replyTo? } with valid email addresses" },
+      { id, error: `Expected { to, subject, html, replyTo? }: ${problems.join("; ")}` },
       { status: 400 },
     );
   }
 
   const companyName = process.env.COMPANY_NAME || "Ingata Travel";
   const fromAddress = process.env.MAIL_FROM || process.env.SMTP_USER;
+  log(`sending "${subject}" to ${to} via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT || 587}`);
 
   try {
     const info = await transporter.sendMail({
@@ -68,13 +120,15 @@ export async function POST(request: Request) {
       html,
       ...(replyTo && { replyTo }),
     });
-    console.log(`[email] sent: "${subject}" to ${to} (id ${info.messageId})`);
-    return Response.json({ id: info.messageId });
-  } catch (error) {
-    console.error(
-      `[email] failed to send "${subject}" to ${to}:`,
-      error instanceof Error ? error.message : error,
+    log(
+      `sent "${subject}" to ${to} in ${Date.now() - started}ms`,
+      { messageId: info.messageId, accepted: info.accepted, rejected: info.rejected, response: info.response },
     );
-    return Response.json({ error: "Failed to send email" }, { status: 502 });
+    return Response.json({ id, messageId: info.messageId });
+  } catch (error) {
+    const details = describeSmtpError(error);
+    fail(`FAILED "${subject}" to ${to} after ${Date.now() - started}ms`, details);
+    // Returned to the backend (authorized callers only) so its logs show the cause too.
+    return Response.json({ id, error: "Failed to send email", details }, { status: 502 });
   }
 }
