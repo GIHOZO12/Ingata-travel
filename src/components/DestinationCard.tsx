@@ -8,7 +8,8 @@ export default function DestinationCard({
 }: {
   destination: Destination;
 }) {
-  const image = resolveImageUrl(destination.heroImage);
+  // Falls back to the first gallery photo when no main photo was set.
+  const image = resolveImageUrl(destination.heroImage || destination.images?.[0]);
 
   return (
     <li className="overflow-hidden rounded-lg border border-zinc-200 bg-white">

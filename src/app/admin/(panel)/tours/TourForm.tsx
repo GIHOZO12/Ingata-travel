@@ -273,7 +273,7 @@ export default function TourForm({
         <Field
           label="Gallery photo links"
           name="images"
-          hint="One per line. Delete a line to remove that photo."
+          hint="One per line (or separated by commas). Delete a link to remove that photo."
         >
           <textarea
             id="images"

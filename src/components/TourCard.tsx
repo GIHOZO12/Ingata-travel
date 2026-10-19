@@ -6,7 +6,8 @@ import { formatDuration, formatPrice } from "@/lib/format";
 // Card for one tour (SRS §13 / §23): image, name, destination, duration,
 // category, starting price and the View Details / Book Now buttons.
 export default function TourCard({ tour }: { tour: Tour }) {
-  const image = resolveImageUrl(tour.featuredImage);
+  // Falls back to the first gallery photo when no main photo was set.
+  const image = resolveImageUrl(tour.featuredImage || tour.images?.[0]);
   const price = formatPrice(tour.startingPrice, tour.currency);
 
   return (

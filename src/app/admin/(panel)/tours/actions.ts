@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { AdminApiError, adminFetch } from "@/lib/admin-api";
 import { uploadImages } from "@/lib/admin-uploads";
-import { fieldErrorsFrom, lines, type FormState } from "@/lib/form";
+import { fieldErrorsFrom, imageLinks, lines, type FormState } from "@/lib/form";
 
 function refreshPublicPages() {
   revalidatePath("/");
@@ -100,7 +100,7 @@ export async function saveTour(
         exclusions: lines(values.exclusions),
         requirements: lines(values.requirements),
         featuredImage: uploadedFeatured ?? values.featuredImage,
-        images: [...lines(values.images), ...uploadedGallery],
+        images: [...imageLinks(values.images), ...uploadedGallery],
         isFeatured: values.isFeatured,
         // The API only reads the itinerary when CREATING a tour.
         ...(id === null ? { itineraryDays: parseItinerary(values.itinerary) } : {}),
