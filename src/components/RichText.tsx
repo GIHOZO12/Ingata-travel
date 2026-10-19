@@ -1,10 +1,4 @@
-// Turns the plain text an admin types into headings, lists and paragraphs.
-//   ## Heading      -> big heading
-//   ### Subheading  -> smaller heading
-//   - item          -> bullet list (each line starting with "- ")
-//   blank line      -> new paragraph
-// Everything is rendered as React elements (never as raw HTML), so pasted
-// <script> tags or markup show up as harmless text.
+
 export default function RichText({ text }: { text: string }) {
   const blocks = text.replace(/\r\n/g, "\n").split(/\n{2,}/);
 
