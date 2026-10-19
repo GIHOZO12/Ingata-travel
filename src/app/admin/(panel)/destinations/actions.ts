@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { AdminApiError, adminFetch } from "@/lib/admin-api";
 import { uploadImages } from "@/lib/admin-uploads";
-import { fieldErrorsFrom, lines, type FormState } from "@/lib/form";
+import { fieldErrorsFrom, imageLinks, lines, type FormState } from "@/lib/form";
 
 // The public site's pages show destination data, so refresh them after changes.
 function refreshPublicPages() {
@@ -57,7 +57,7 @@ export async function saveDestination(
         activities: lines(values.activities),
         bestTimeToVisit: values.bestTimeToVisit,
         heroImage: uploadedHero ?? values.heroImage,
-        images: [...lines(values.images), ...uploadedGallery],
+        images: [...imageLinks(values.images), ...uploadedGallery],
         isFeatured: values.isFeatured,
       }),
     });
